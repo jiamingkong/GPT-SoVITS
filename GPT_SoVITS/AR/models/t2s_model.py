@@ -48,7 +48,7 @@ def scaled_dot_product_attention(query:torch.Tensor, key:torch.Tensor, value:tor
 
     if attn_mask is not None:
         if attn_mask.dtype == torch.bool:
-            attn_bias.masked_fill_(attn_mask, float("-inf"))
+            attn_bias.contiguous().masked_fill_(attn_mask, float("-inf"))
         else:
             attn_bias += attn_mask
     attn_weight = query @ key.transpose(-2, -1) * scale_factor
@@ -57,11 +57,11 @@ def scaled_dot_product_attention(query:torch.Tensor, key:torch.Tensor, value:tor
 
     if attn_mask is not None:
         if attn_mask.dtype == torch.bool:
-            attn_weight.masked_fill_(attn_mask, 0)
+            attn_weight.contiguous().masked_fill_(attn_mask, 0)
         else:
             attn_mask[attn_mask!=float("-inf")] =0
             attn_mask[attn_mask==float("-inf")] =1
-            attn_weight.masked_fill_(attn_mask, 0)
+            attn_weight.contiguous().masked_fill_(attn_mask, 0)
 
     return attn_weight @ value
 
@@ -387,7 +387,7 @@ class Text2SemanticDecoder(nn.Module):
         )
         xy_attn_mask = xy_attn_mask.logical_or(_xy_padding_mask)
         new_attn_mask = torch.zeros_like(xy_attn_mask, dtype=x.dtype)
-        new_attn_mask.masked_fill_(xy_attn_mask, float("-inf"))
+        new_attn_mask.contiguous().masked_fill_(xy_attn_mask, float("-inf"))
         xy_attn_mask = new_attn_mask
         # x 和完整的 y 一次性输入模型
         xy_pos = torch.concat([x, y_pos], dim=1)
@@ -481,7 +481,7 @@ class Text2SemanticDecoder(nn.Module):
         )
         xy_attn_mask = xy_attn_mask.logical_or(_xy_padding_mask)
         new_attn_mask = torch.zeros_like(xy_attn_mask, dtype=x.dtype)
-        new_attn_mask.masked_fill_(xy_attn_mask, float("-inf"))
+        new_attn_mask.contiguous().masked_fill_(xy_attn_mask, float("-inf"))
         xy_attn_mask = new_attn_mask
         # x 和完整的 y 一次性输入模型
         xy_pos = torch.concat([x, y_pos], dim=1)

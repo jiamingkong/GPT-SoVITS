@@ -53,7 +53,7 @@ def logits_to_probs(
         indices_to_remove = sorted_indices_to_remove.scatter(
             dim=0, index=sorted_indices, src=sorted_indices_to_remove
         )
-        logits = logits.masked_fill(indices_to_remove, -float("Inf"))
+        logits = logits.contiguous().masked_fill(indices_to_remove, -float("Inf"))
 
     logits = logits / max(temperature, 1e-5)
 

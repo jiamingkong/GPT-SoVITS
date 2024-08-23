@@ -550,9 +550,9 @@ class ScaledAdam(BatchedOptimizer):
         is_too_large = param_rms > param_max_rms
 
         # when the param gets too small, just don't shrink it any further.
-        scale_step.masked_fill_(is_too_small, 0.0)
+        scale_step.contiguous().masked_fill_(is_too_small, 0.0)
         # when it gets too large, stop it from getting any larger.
-        scale_step.masked_fill_(is_too_large, -size_lr * size_update_period)
+        scale_step.contiguous().masked_fill_(is_too_large, -size_lr * size_update_period)
         delta = state["delta"]
         # the factor of (1-beta1) relates to momentum.
         delta.add_(p * scale_step, alpha=(1 - beta1))
